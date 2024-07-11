@@ -1,12 +1,28 @@
 {
-  "$schema": "https://raw.githubusercontent.com/LuaLS/LLS-Addons/main/schemas/addon_config.schema.json",
-  "words": ["my-http-addon", "%s+-http%-addon"],
-  "files": ["network.lua"],
-  "settings": {
-    "Lua.workspace.preloadFileSize": 5000,
-    "Lua.workspace.ignoreDir": ["ignore-me"],
-    "Lua.diagnostics.groupSeverity": {
-      "await": "Error"
-    }
-  }
+	"name": "Redis Lua API",
+	"settings": {
+		"diagnostics.groupFileStatus": {
+			"conventions": "Any"
+		},
+		"diagnostics.groupSeverity": {
+			"conventions": "Error",
+			"global": "Error"
+		},
+		"runtime.builtin": {
+			"basic": "disable",
+			"bit": "disable",
+			"bit32": "disable",
+			"builtin": "disable",
+			"coroutine": "disable",
+			"debug": "disable",
+			"ffi": "disable",
+			"io": "disable",
+			"jit": "disable",
+			"package": "disable",
+			"table.clear": "disable",
+			"table.new": "disable",
+			"utf8": "disable"
+		},
+		"runtime.version": "Lua 5.1"
+	}
 }

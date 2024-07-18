@@ -1,0 +1,15 @@
+---@meta
+---[The KEYS global variable](https://redis.io/docs/latest/develop/interact/programmability/lua-api#the-keys-global-variable)
+---* Since version: 2.6.0
+---* Available in scripts: yes
+---* Available in functions: no
+---
+---**Important:**
+---to ensure the correct execution of scripts, both in standalone and clustered deployments, all names of keys that a function accesses must be explicitly provided as input key arguments.
+---The script **should only** access keys whose names are given as input arguments.
+---Scripts **should never** access keys with programmatically-generated names or based on the contents of data structures stored in the database.
+---
+---The _KEYS_ global variable is available only for [ephemeral scripts](https://redis.io/docs/latest/develop/interact/programmability/eval-intro).
+---It is pre-populated with all key name input arguments.
+---@type string[]
+KEYS = {}

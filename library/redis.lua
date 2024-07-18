@@ -1,0 +1,471 @@
+---@meta
+---@enum Level
+local Level = {
+	LOG_DEBUG = 0,
+	LOG_VERBOSE = 1,
+	LOG_NOTICE = 2,
+	LOG_WARNING = 3,
+}
+---@enum Repl
+local Repl = {
+	REPL_NONE = 0,
+	REPL_AOF = 1,
+	REPL_REPLICA = 2,
+	REPL_SLAVE = 2,
+	REPL_ALL = 3,
+}
+---[redis object](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis_object)
+---* Since version: 2.6.0
+---* Available in scripts: yes
+---* Available in functions: yes
+---
+---The Redis Lua execution context always provides a singleton instance of an object named _redis_.
+---The _redis_ instance enables the script to interact with the Redis server that's running it.
+---Following is the API provided by the _redis_ object instance.
+---@class redis
+redis = {
+	LOG_DEBUG = 0,
+	LOG_VERBOSE = 1,
+	LOG_NOTICE = 2,
+	LOG_WARNING = 3,
+	REPL_NONE = 0,
+	REPL_AOF = 1,
+	REPL_REPLICA = 2,
+	REPL_SLAVE = 2,
+	REPL_ALL = 3,
+	---[redis.redis_version](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.redis_version)
+	---* Since version: 7.0.0
+	---* Available in scripts: yes
+	---* Available in functions: yes
+	---
+	---Returns the current Redis server version as a Lua string.
+	---The reply's format is `MM.mm.PP`, where:
+	---
+	---* **MM:** is the major version.
+	---* **mm:** is the minor version.
+	---* **PP:** is the patch level.
+	---@type string
+	REDIS_VERSION = '',
+	---[redis.redis_version_num](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.redis_version_num)
+	---* Since version: 7.0.0
+	---* Available in scripts: yes
+	---* Available in functions: yes
+	---
+	---Returns the current Redis server version as a number.
+	---The reply is a hexadecimal value structured as `0x00MMmmPP`, where:
+	---
+	---* **MM:** is the major version.
+	---* **mm:** is the minor version.
+	---* **PP:** is the patch level.
+	---@type integer
+	REDIS_VERSION_NUM = 0,
+	---[redis.call](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.call)
+	---* Since version: 2.6.0
+	---* Available in scripts: yes
+	---* Available in functions: yes
+	---
+	---The `redis.call()` function calls a given Redis command and returns its reply.
+	---Its inputs are the command and arguments, and once called, it executes the command in Redis and returns the reply.
+	---
+	---For example, we can call the [`ECHO`](https://redis.io/docs/latest/commands/echo) command from a script and return its reply like so:
+	---
+	---```lua
+	---return redis.call('ECHO', 'Echo, echo... eco... o...')
+	---```
+	---
+	---If and when `redis.call()` triggers a runtime exception, the raw exception is raised back to the user as an error, automatically.
+	---Therefore, attempting to execute the following ephemeral script will fail and generate a runtime exception because [`ECHO`](https://redis.io/docs/latest/commands/echo) accepts exactly one argument:
+	---
+	---```lua
+	---redis> EVAL "return redis.call('ECHO', 'Echo,', 'echo... ', 'eco... ', 'o...')" 0
+	---(error) ERR Wrong number of args calling Redis command from script script: b0345693f4b77517a711221050e76d24ae60b7f7, on @user_script:1.
+	---```
+	---
+	---Note that the call can fail due to various reasons, see [Execution under low memory conditions](https://redis.io/docs/latest/develop/interact/programmability/eval-intro#execution-under-low-memory-conditions) and [Script flags](lua://redis.register_function).
+	---
+	---To handle Redis runtime errors use `redis.pcall()` instead.
+	---@param command string
+	---@param ... any
+	---@return any
+	call = function(command, ...) end,
+	---[redis.pcall](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.pcall)
+	---* Since version: 2.6.0
+	---* Available in scripts: yes
+	---* Available in functions: yes
+	---
+	---This function enables handling runtime errors raised by the Redis server.
+	---The `redis.pcall()` function  behaves exactly like [`redis.call()`](lua://redis.call), except that it:
+	---
+	---* Always returns a reply.
+	---* Never throws a runtime exception, and returns in its stead a [`redis.error_reply`](lua://redis.error_reply) in case that a runtime exception is thrown by the server.
+	---
+	---The following demonstrates how to use `redis.pcall()` to intercept and handle runtime exceptions from within the context of an ephemeral script.
+	---
+	---```lua
+	---local reply = redis.pcall('ECHO', unpack(ARGV))
+	---if reply['err'] ~= nil then
+	---  -- Handle the error sometime, but for now just log it
+	---  redis.log(redis.LOG_WARNING, reply['err'])
+	---  reply['err'] = 'ERR Something is wrong, but no worries, everything is under control'
+	---end
+	---return reply
+	---```
+	---
+	---Evaluating this script with more than one argument will return:
+	---
+	---```
+	---redis> EVAL "..." 0 hello world
+	---(error) ERR Something is wrong, but no worries, everything is under control
+	---```
+	---@param command string
+	---@param ... any
+	---@return {err: string} | any
+	pcall = function(command, ...) end,
+	---[redis.error_reply](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.error_reply)
+	---* Since version: 2.6.0
+	---* Available in scripts: yes
+	---* Available in functions: yes
+	---
+	---This is a helper function that returns an [error reply](https://redis.io/docs/latest/develop/reference/protocol-spec#simple-errors).
+	---The helper accepts a single string argument and returns a Lua table with the _err_ field set to that string.
+	---
+	---The outcome of the following code is that _error1_ and _error2_ are identical for all intents and purposes:
+	---
+	---```lua
+	---local text = 'ERR My very special error'
+	---local reply1 = { err = text }
+	---local reply2 = redis.error_reply(text)
+	---```
+	---
+	---Therefore, both forms are valid as means for returning an error reply from scripts:
+	---
+	---```
+	---redis> EVAL "return { err = 'ERR My very special table error' }" 0
+	---(error) ERR My very special table error
+	---redis> EVAL "return redis.error_reply('ERR My very special reply error')" 0
+	---(error) ERR My very special reply error
+	---```
+	---
+	---For returning Redis status replies refer to [`redis.status_reply()`](lua://redis.status_reply).
+	---Refer to the [Data type conversion](https://redis.io/docs/latest/develop/interact/programmability/lua-api#data-type-conversion) for returning other response types.
+	---
+	---**Note:**
+	---By convention, Redis uses the first word of an error string as a unique error code for specific errors or `ERR` for general-purpose errors.
+	---Scripts are advised to follow this convention, as shown in the example above, but this is not mandatory.
+	---@param x string
+	---@return {err: string}
+	---@nodiscard
+	error_reply = function(x) end,
+	---[redis.status_reply](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.status_reply)
+	---* Since version: 2.6.0
+	---* Available in scripts: yes
+	---* Available in functions: yes
+	---
+	---This is a helper function that returns a [simple string reply](https://redis.io/docs/latest/develop/reference/protocol-spec#simple-strings).
+	---"OK" is an example of a standard Redis status reply.
+	---The Lua API represents status replies as tables with a single field, _ok_, set with a simple status string.
+	---
+	---The outcome of the following code is that _status1_ and _status2_ are identical for all intents and purposes:
+	---
+	---```lua
+	---local text = 'Frosty'
+	---local status1 = { ok = text }
+	---local status2 = redis.status_reply(text)
+	---```
+	---
+	---Therefore, both forms are valid as means for returning status replies from scripts:
+	---
+	---```
+	---redis> EVAL "return { ok = 'TICK' }" 0
+	---TICK
+	---redis> EVAL "return redis.status_reply('TOCK')" 0
+	---TOCK
+	---```
+	---
+	---For returning Redis error replies refer to [`redis.error_reply()`](lua://redis.error_reply).
+	---Refer to the [Data type conversion](https://redis.io/docs/latest/develop/interact/programmability/lua-api#data-type-conversion) for returning other response types.
+	---@param x string
+	---@return {err: string}
+	---@nodiscard
+	status_reply = function(x) end,
+	---[redis.sha1hex](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.sha1hex)
+	---* Since version: 2.6.0
+	---* Available in scripts: yes
+	---* Available in functions: yes
+	---
+	---This function returns the SHA1 hexadecimal digest of its single string argument.
+	---
+	---You can, for example, obtain the empty string's SHA1 digest:
+	---
+	---```
+	---redis> EVAL "return redis.sha1hex('')" 0
+	---"da39a3ee5e6b4b0d3255bfef95601890afd80709"
+	---```
+	---@param x any
+	---@return string
+	---@nodiscard
+	sha1hex = function(x) end,
+	---[redis.log](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.log)
+	---* Since version: 2.6.0
+	---* Available in scripts: yes
+	---* Available in functions: yes
+	---
+	---This function writes to the Redis server log.
+	---
+	---It expects two input arguments: the log level and a message.
+	---The message is a string to write to the log file.
+	---Log level can be on of these:
+	---
+	---* `redis.LOG_DEBUG`
+	---* `redis.LOG_VERBOSE`
+	---* `redis.LOG_NOTICE`
+	---* `redis.LOG_WARNING`
+	---
+	---These levels map to the server's log levels.
+	---The log only records messages equal or greater in level than the server's `loglevel` configuration directive.
+	---
+	---The following snippet:
+	---
+	---```lua
+	---redis.log(redis.LOG_WARNING, 'Something is terribly wrong')
+	---```
+	---
+	---will produce a line similar to the following in your server's log:
+	---
+	---```
+	---[32343] 22 Mar 15:21:39 # Something is terribly wrong
+	---```
+	---@param level Level
+	---@param ... any
+	log = function(level, ...) end,
+	---[redis.setresp](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.setresp)
+	---* Since version: 6.0.0
+	---* Available in scripts: yes
+	---* Available in functions: yes
+	---
+	---This function allows the executing script to switch between [Redis Serialization Protocol (RESP)](https://redis.io/docs/latest/develop/reference/protocol-spec) versions for the replies returned by [`redis.call()`](lua://redis.call) and [`redis.pcall()`](lua://redis.pcall).
+	---It expects a single numerical argument as the protocol's version.
+	---The default protocol version is _2_, but it can be switched to version _3_.
+	---
+	---Here's an example of switching to RESP3 replies:
+	---
+	---```lua
+	---redis.setresp(3)
+	---```
+	---
+	---Please refer to the [Data type conversion](https://redis.io/docs/latest/develop/interact/programmability/lua-api#data-type-conversion) for more information about type conversions.
+	---@param x 2 | 3
+	setresp = function(x) end,
+	---[redis.set_repl](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.set_repl)
+	---* Since version: 3.2.0
+	---* Available in scripts: yes
+	---* Available in functions: no
+	---
+	---**Note:**
+	---this feature is only available when script effects replication is employed.
+	---Calling it when using verbatim script replication will result in an error.
+	---As of Redis version 2.6.0, scripts were replicated verbatim, meaning that the scripts' source code was sent for execution by replicas and stored in the AOF.
+	---An alternative replication mode added in version 3.2.0 allows replicating only the scripts' effects.
+	---As of Redis version 7.0, script replication is no longer supported, and the only replication mode available is script effects replication.
+	---
+	---**Warning:**
+	---this is an advanced feature. Misuse can cause damage by violating the contract that binds the Redis master, its replicas, and AOF contents to hold the same logical content.
+	---
+	---This function allows a script to assert control over how its effects are propagated to replicas and the AOF afterward.
+	---A script's effects are the Redis write commands that it calls.
+	---
+	---By default, all write commands that a script executes are replicated.
+	---Sometimes, however, better control over this behavior can be helpful.
+	---This can be the case, for example, when storing intermediate values in the master alone.
+	---
+	---Consider a script that intersects two sets and stores the result in a temporary key with [`SUNIONSTORE`](https://redis.io/docs/latest/commands/sunionstore).
+	---It then picks five random elements ([`SRANDMEMBER`](https://redis.io/docs/latest/commands/srandmember)) from the intersection and stores ([`SADD`](https://redis.io/docs/latest/commands/sadd)) them in another set.
+	---Finally, before returning, it deletes the temporary key that stores the intersection of the two source sets.
+	---
+	---In this case, only the new set with its five randomly-chosen elements needs to be replicated.
+	---Replicating the [`SUNIONSTORE`](https://redis.io/docs/latest/commands/sunionstore) command and the [`DEL`](https://redis.io/docs/latest/commands/del)ition of the temporary key is unnecessary and wasteful.
+	---
+	---The `redis.set_repl()` function instructs the server how to treat subsequent write commands in terms of replication.
+	---It accepts a single input argument that only be one of the following:
+	---
+	---* `redis.REPL_ALL`: replicates the effects to the AOF and replicas.
+	---* `redis.REPL_AOF`: replicates the effects to the AOF alone.
+	---* `redis.REPL_REPLICA`: replicates the effects to the replicas alone.
+	---* `redis.REPL_SLAVE`: same as `REPL_REPLICA`, maintained for backward compatibility.
+	---* `redis.REPL_NONE`: disables effect replication entirely.
+	---
+	---By default, the scripting engine is initialized to the `redis.REPL_ALL` setting when a script begins its execution.
+	---You can call the `redis.set_repl()` function at any time during the script's execution to switch between the different replication modes.
+	---
+	---A simple example follows:
+	---
+	---```lua
+	---redis.replicate_commands() -- Enable effects replication in versions lower than Redis v7.0
+	---redis.call('SET', KEYS[1], ARGV[1])
+	---redis.set_repl(redis.REPL_NONE)
+	---redis.call('SET', KEYS[2], ARGV[2])
+	---redis.set_repl(redis.REPL_ALL)
+	---redis.call('SET', KEYS[3], ARGV[3])
+	---```
+	---
+	---If you run this script by calling `EVAL "..." 3 A B C 1 2 3`, the result will be that only the keys _A_ and _C_ are created on the replicas and AOF.
+	---@param x Repl
+	set_repl = function(x) end,
+	---[redis.replicate_commands](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.replicate_commands)
+	---* Since version: 3.2.0
+	---* Until version: 7.0.0
+	---* Available in scripts: yes
+	---* Available in functions: no
+	---
+	---This function switches the script's replication mode from verbatim replication to effects replication.
+	---You can use it to override the default verbatim script replication mode used by Redis until version 7.0.
+	---
+	---**Note:**
+	---as of Redis v7.0, verbatim script replication is no longer supported.
+	---The default, and only script replication mode supported, is script effects' replication.
+	---For more information, please refer to [`Replicating commands instead of scripts`](https://redis.io/docs/latest/develop/interact/programmability/eval-intro#replicating-commands-instead-of-scripts)
+	---@return true
+	---@deprecated
+	replicate_commands = function() end,
+	---[redis.breakpoint](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.breakpoint)
+	---* Since version: 3.2.0
+	---* Available in scripts: yes
+	---* Available in functions: no
+	---
+	---This function triggers a breakpoint when using the [Redis Lua debugger](https://redis.io/docs/latest/develop/interact/programmability/lua-debugging).
+	---@return boolean
+	breakpoint = function() end,
+	---[redis.debug](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.debug)
+	---* Since version: 3.2.0
+	---* Available in scripts: yes
+	---* Available in functions: no
+	---
+	---This function prints its argument in the [Redis Lua debugger](https://redis.io/docs/latest/develop/interact/programmability/lua-debugging) console.
+	debug = function(x) end,
+	---[redis.acl_check_cmd](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.acl_check_cmd)
+	---* Since version: 7.0.0
+	---* Available in scripts: yes
+	---* Available in functions: yes
+	---
+	---This function is used for checking if the current user running the script has [ACL](https://redis.io/docs/latest/operate/oss_and_stack/management/security/acl) permissions to execute the given command with the given arguments.
+	---
+	---The return value is a boolean `true` in case the current user has permissions to execute the command (via a call to [redis.call](lua://redis.call) or [redis.pcall](lua://redis.pcall)) or `false` in case they don't.
+	---
+	---The function will raise an error if the passed command or its arguments are invalid.
+	---@param command string
+	---@param ... any
+	---@return boolean
+	---@nodiscard
+	acl_check_cmd = function(command, ...) end,
+	---[redis.register_function](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.register_function)
+	---* Since version: 7.0.0
+	---* Available in scripts: no
+	---* Available in functions: yes
+	---
+	---This function is only available from the context of the [`FUNCTION LOAD`](https://redis.io/docs/latest/commands/function-load) command.
+	---When called, it registers a function to the loaded library.
+	---The function can be called either with positional or named arguments.
+	---
+	---#### <a name="redis.register_function_pos_args"></a> positional arguments
+	---
+	---The first argument to `redis.register_function` is a Lua string representing the function name.
+	---The second argument to `redis.register_function` is a Lua function.
+	---
+	---Usage example:
+	---
+	---```
+	---redis> FUNCTION LOAD "#!lua name=mylib\n redis.register_function('noop', function() end)"
+	---```
+	---@param name string
+	---@param callback function
+	register_function = function(name, callback) end,
+}
+---[redis.register_function](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.register_function)
+---* Since version: 7.0.0
+---* Available in scripts: no
+---* Available in functions: yes
+---
+---This function is only available from the context of the [`FUNCTION LOAD`](https://redis.io/docs/latest/commands/function-load) command.
+---When called, it registers a function to the loaded library.
+---The function can be called either with positional or named arguments.
+---
+---#### <a name="redis.register_function_named_args"></a> Named arguments
+---
+---The named arguments variant accepts the following arguments:
+---
+---* _function\_name_: the function's name.
+---* _callback_: the function's callback.
+---* _flags_: an array of strings, each a function flag (optional).
+---* _description_: function's description (optional).
+---
+---Both _function\_name_ and _callback_ are mandatory.
+---
+---Usage example:
+---
+---```
+---redis> FUNCTION LOAD "#!lua name=mylib\n redis.register_function{function_name='noop', callback=function() end, flags={ 'no-writes' }, description='Does nothing'}"
+---```
+---
+---#### <a name="script_flags"></a> Script flags
+---
+---**Important:**
+---Use script flags with care, which may negatively impact if misused.
+---Note that the default for Eval scripts are different than the default for functions that are mentioned below, see [Eval Flags](https://redis.io/docs/latest/develop/interact/programmability/eval-intro#eval-flags)
+---
+---When you register a function or load an Eval script, the server does not know how it accesses the database.
+---By default, Redis assumes that all scripts read and write data.
+---This results in the following behavior:
+---
+---1. They can read and write data.
+---1. They can run in cluster mode, and are not able to run commands accessing keys of different hash slots.
+---1. Execution against a stale replica is denied to avoid inconsistent reads.
+---1. Execution under low memory is denied to avoid exceeding the configured threshold.
+---
+---You can use the following flags and instruct the server to treat the scripts' execution differently:
+---
+---* `no-writes`: this flag indicates that the script only reads data but never writes.
+---
+---    By default, Redis will deny the execution of flagged scripts (Functions and Eval scripts with [shebang](https://redis.io/docs/latest/develop/interact/programmability/eval-intro#eval-flags)) against read-only replicas, as they may attempt to perform writes.
+---    Similarly, the server will not allow calling scripts with [`FCALL_RO`](https://redis.io/docs/latest/commands/fcall_ro) / [`EVAL_RO`](https://redis.io/docs/latest/commands/eval_ro).
+---    Lastly, when data persistence is at risk due to a disk error, execution is blocked as well.
+---
+---    Using this flag allows executing the script:
+---    1. With [`FCALL_RO`](https://redis.io/docs/latest/commands/fcall_ro) / [`EVAL_RO`](https://redis.io/docs/latest/commands/eval_ro)
+---    2. On read-only replicas.
+---    3. Even if there's a disk error (Redis is unable to persist so it rejects writes).
+---    4. When over the memory limit since it implies the script doesn't increase memory consumption (see `allow-oom` below)
+---
+---    However, note that the server will return an error if the script attempts to call a write command.
+---    Also note that currently [`PUBLISH`](https://redis.io/docs/latest/commands/publish), [`SPUBLISH`](https://redis.io/docs/latest/commands/spublish) and [`PFCOUNT`](https://redis.io/docs/latest/commands/pfcount) are also considered write commands in scripts, because they could attempt to propagate commands to replicas and AOF file.
+---
+---    For more information please refer to [Read-only scripts](https://redis.io/docs/latest/develop/interact/programmability#read-only_scripts)
+---
+---* `allow-oom`: use this flag to allow a script to execute when the server is out of memory (OOM).
+---
+---    Unless used, Redis will deny the execution of flagged scripts (Functions and Eval scripts with [shebang](https://redis.io/docs/latest/develop/interact/programmability/eval-intro#eval-flags)) when in an OOM state.
+---    Furthermore, when you use this flag, the script can call any Redis command, including commands that aren't usually allowed in this state.
+---    Specifying `no-writes` or using [`FCALL_RO`](https://redis.io/docs/latest/commands/fcall_ro) / [`EVAL_RO`](https://redis.io/docs/latest/commands/eval_ro) also implies the script can run in OOM state (without specifying `allow-oom`)
+---
+---* `allow-stale`: a flag that enables running the flagged scripts (Functions and Eval scripts with [shebang](https://redis.io/docs/latest/develop/interact/programmability/eval-intro#eval-flags)) against a stale replica when the `replica-serve-stale-data` config is set to `no` .
+---
+---    Redis can be set to prevent data consistency problems from using old data by having stale replicas return a runtime error.
+---    For scripts that do not access the data, this flag can be set to allow stale Redis replicas to run the script.
+---    Note however that the script will still be unable to execute any command that accesses stale data.
+---
+---* `no-cluster`: the flag causes the script to return an error in Redis cluster mode.
+---
+---    Redis allows scripts to be executed both in standalone and cluster modes.
+---    Setting this flag prevents executing the script against nodes in the cluster.
+---
+---* `allow-cross-slot-keys`: The flag that allows a script to access keys from multiple slots.
+---
+---    Redis typically prevents any single command from accessing keys that hash to multiple slots.
+---    This flag allows scripts to break this rule and access keys within the script that access multiple slots.
+---    Declared keys to the script are still always required to hash to a single slot.
+---    Accessing keys from multiple slots is discouraged as applications should be designed to only access keys from a single slot at a time, allowing slots to move between Redis servers.
+---
+---    This flag has no effect when cluster mode is disabled.
+---
+---Please refer to [Function Flags](https://redis.io/docs/latest/develop/interact/programmability/functions-intro#function-flags) and [Eval Flags](https://redis.io/docs/latest/develop/interact/programmability/eval-intro#eval-flags) for a detailed example.
+---@param name {function_name: string, callback: function, flags: ('no-writes' | 'allow-oom' | 'allow-stale' | 'no-cluster' | 'allow-cross-slot-keys')[]?, description: string?}
+redis.register_function = function(name) end

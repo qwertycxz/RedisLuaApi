@@ -1,14 +1,15 @@
 {
+	"$schema": "https://raw.githubusercontent.com/LuaLS/LLS-Addons/main/schemas/addon_config.schema.json",
 	"name": "Redis Lua API",
 	"settings": {
-		"diagnostics.groupFileStatus": {
+		"Lua.diagnostics.groupFileStatus": {
 			"conventions": "Any"
 		},
-		"diagnostics.groupSeverity": {
+		"Lua.diagnostics.groupSeverity": {
 			"conventions": "Error",
 			"global": "Error"
 		},
-		"runtime.builtin": {
+		"Lua.runtime.builtin": {
 			"basic": "disable",
 			"bit": "disable",
 			"bit32": "disable",
@@ -23,6 +24,12 @@
 			"table.new": "disable",
 			"utf8": "disable"
 		},
-		"runtime.version": "Lua 5.1"
-	}
+		"Lua.runtime.version": "Lua 5.1"
+	},
+	"words": [
+		"redis%."
+	],
+	"files": [
+		"test.lua"
+	]
 }

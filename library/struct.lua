@@ -1,0 +1,87 @@
+---@meta
+---[struct library](https://redis.io/docs/latest/develop/interact/programmability/lua-api#struct-library)
+---* Since version: 2.6.0
+---* Available in scripts: yes
+---* Available in functions: yes
+---
+---_struct_ is a library for packing and unpacking C-like structures in Lua.
+---It provides the following functions:
+---
+---* [`struct.pack()`](lua://struct.pack)
+---* [`struct.unpack()`](lua://struct.unpack)
+---* [`struct.size()`](lua://struct.size)
+---
+---All of _struct_'s functions expect their first argument to be a [format string](https://redis.io/docs/latest/develop/interact/programmability/lua-api#struct-formats).
+---
+---#### <a name="struct-formats"></a> _struct_ formats
+---
+---The following are valid format strings for _struct_'s functions:
+---
+---* `>`: big endian
+---* `<`: little endian
+---* `![num]`: alignment
+---* `x`: padding
+---* `b/B`: signed/unsigned byte
+---* `h/H`: signed/unsigned short
+---* `l/L`: signed/unsigned long
+---* `T`: size_t
+---* `i/In`: signed/unsigned integer with size _n_ (defaults to the size of int)
+---* `cn`: sequence of _n_ chars (from/to a string); when packing, n == 0 means the
+---  whole string; when unpacking, n == 0 means use the previously read number as
+---  the string's length.
+---* `s`: zero-terminated string
+---* `f`: float
+---* `d`: double
+---* ` ` (space): ignored
+---@class struct
+struct = {
+	---[struct.pack](https://redis.io/docs/latest/develop/interact/programmability/lua-api#struct.pack)
+	---
+	---This function returns a struct-encoded string from values.
+	---It accepts a [_struct_ format string](https://redis.io/docs/latest/develop/interact/programmability/lua-api#struct-formats) as its first argument, followed by the values that are to be encoded.
+	---
+	---Usage example:
+	---
+	---```
+	---redis> EVAL "return struct.pack('HH', 1, 2)" 0
+	---"\x01\x00\x02\x00"
+	---```
+	---@param x string
+	---@param ... number | string
+	---@return string
+	---@nodiscard
+	pack = function(x, ...) end,
+	---[struct.unpack](https://redis.io/docs/latest/develop/interact/programmability/lua-api#struct.unpack)
+	---
+	---This function returns the decoded values from a struct.
+	---It accepts a [_struct_ format string](https://redis.io/docs/latest/develop/interact/programmability/lua-api#struct-formats) as its first argument, followed by encoded struct's string.
+	---
+	---Usage example:
+	---
+	---```
+	---redis> EVAL "return { struct.unpack('HH', ARGV[1]) }" 0 "\x01\x00\x02\x00"
+	---1) (integer) 1
+	---2) (integer) 2
+	---3) (integer) 5
+	---```
+	---@param x string
+	---@param ... number | string
+	---@return number | string ...
+	---@nodiscard
+	unpack = function(x, ...) end,
+	---[struct.size](https://redis.io/docs/latest/develop/interact/programmability/lua-api#struct.size)
+	---
+	---This function returns the size, in bytes, of a struct.
+	---It accepts a [_struct_ format string](https://redis.io/docs/latest/develop/interact/programmability/lua-api#struct-formats) as its only argument.
+	---
+	---Usage example:
+	---
+	---```
+	---redis> EVAL "return struct.size('HH')" 0
+	---(integer) 4
+	---```
+	---@param x string
+	---@return integer
+	---@nodiscard
+	size = function(x) end,
+}

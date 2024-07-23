@@ -10,12 +10,6 @@ jobs:
         #     output1: ${{ steps.step1.outputs }}
         runs-on: ubuntu-latest
         steps:
-          - run: docker images
-          - uses: ScribeMD/docker-cache@0.5.0
-            with:
-                key: docker-${{ runner.os }}
-          - run: docker images
           - uses: mileschou/lua-action@master
             with:
-                args: lua -v
-          - run: docker images
+                args: which lua && which luarocks

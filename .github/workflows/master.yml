@@ -11,11 +11,9 @@ jobs:
         runs-on: ubuntu-latest
         steps:
           - run: docker images
-          - uses: whoan/docker-build-with-cache-action@master
+          - uses: ScribeMD/docker-cache@0.5.0
             with:
-                image_name: mileschou/lua
-                image_tag: '5.3'
-                push_image_and_stages: false
+                key: docker-${{ runner.os }}
           - run: docker images
           - uses: mileschou/lua-action@master
             with:

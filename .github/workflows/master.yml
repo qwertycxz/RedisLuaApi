@@ -10,13 +10,14 @@ jobs:
         #     output1: ${{ steps.step1.outputs }}
         runs-on: ubuntu-latest
         steps:
-          - run: docker ps -a
+          - run: docker images
           - uses: whoan/docker-build-with-cache-action@master
             with:
                 image_name: mileschou/lua
                 image_tag: 5.3
-          - run: docker ps -a
+                push_image_and_stages: false
+          - run: docker images
           - uses: mileschou/lua-action@master
             with:
                 args: lua -v
-          - run: docker ps -a
+          - run: docker images

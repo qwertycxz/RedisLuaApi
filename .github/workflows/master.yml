@@ -13,7 +13,8 @@ jobs:
           - run: docker ps -a
           - uses: whoan/docker-build-with-cache-action@master
             with:
-                image_name: mileschou/lua:5.3
+                image_name: mileschou/lua
+                tag: 5.3
           - run: docker ps -a
           - uses: mileschou/lua-action@master
             with:

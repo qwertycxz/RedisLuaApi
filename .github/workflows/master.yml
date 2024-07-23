@@ -10,10 +10,8 @@ jobs:
         #     output1: ${{ steps.step1.outputs }}
         runs-on: ubuntu-latest
         steps:
-        #   - uses: ScribeMD/docker-cache@0.5.0
-        #     with:
-        #         key: docker-${{ runner.os }}
-          - uses: ljmf00/setup-lua@master
-            with:
-                install-luarocks: true
-          - run: lua -v && luarocks -v
+        - uses: leafo/gh-actions-lua@v10
+        - uses: leafo/gh-actions-luarocks@v4
+        - run: |
+            lua -v
+            luarocks -v

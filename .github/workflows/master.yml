@@ -1,0 +1,17 @@
+on:
+    schedule:
+        - cron: "0 0 * * *"
+    workflow_dispatch:
+jobs:
+    keep-scheduled-workflow-activity:
+        uses: WaterLemons2k/scheduled-workflow-activity-action/.github/workflows/reusable.yml@v1
+    overload-call:
+        outputs:
+            output1: ${{ steps.step1.outputs }}
+        runs-on: ubuntu-latest
+        steps:
+          - run: docker ps -a >> "$GITHUB_OUTPUT"
+            id: step1
+        #   - uses: whoan/docker-build-with-cache-action@master
+        #     with:
+        #         image_name: mileschou/lua:5.3

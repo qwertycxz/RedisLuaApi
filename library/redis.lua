@@ -1,4 +1,5 @@
 ---@meta
+---@alias arg number | string
 ---@enum Level
 local Level = {
 	LOG_DEBUG = 0,
@@ -85,7 +86,7 @@ redis = {
 	---
 	---To handle Redis runtime errors use `redis.pcall()` instead.
 	---@param command string
-	---@param ... any
+	---@param ... arg
 	---@return any
 	call = function(command, ...) end,
 	---[redis.pcall](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.pcall)
@@ -118,7 +119,7 @@ redis = {
 	---(error) ERR Something is wrong, but no worries, everything is under control
 	---```
 	---@param command string
-	---@param ... any
+	---@param ... arg
 	---@return {err: string} | any
 	pcall = function(command, ...) end,
 	---[redis.error_reply](https://redis.io/docs/latest/develop/interact/programmability/lua-api#redis.error_reply)
@@ -353,7 +354,7 @@ redis = {
 	---
 	---The function will raise an error if the passed command or its arguments are invalid.
 	---@param command string
-	---@param ... any
+	---@param ... arg
 	---@return boolean
 	---@nodiscard
 	acl_check_cmd = function(command, ...) end,

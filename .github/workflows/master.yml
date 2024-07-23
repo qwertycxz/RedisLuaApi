@@ -13,7 +13,7 @@ jobs:
         #   - uses: ScribeMD/docker-cache@0.5.0
         #     with:
         #         key: docker-${{ runner.os }}
-          - uses: mileschou/lua-action@master
+          - uses: ljmf00/setup-lua@master
             with:
-                args: lua -v
-          - run: lua -v
+                install-luarocks: true
+          - run: lua -v && luarocks -v

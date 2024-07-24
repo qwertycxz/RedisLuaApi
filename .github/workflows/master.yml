@@ -12,17 +12,13 @@ jobs:
     steps:
       - uses: leafo/gh-actions-lua@v10
       - uses: leafo/gh-actions-luarocks@v4
-    #   - uses: actions/cache@v3
-    #     with:
-    #       key: luarocks
-    #       path: |
-    #         /usr/local/bin/luarocks
-    #         /usr/local/bin/luarocks-5.1
-    #         /usr/local/share/lua
-    #         /usr/local/lib/lua
-    #         /usr/local/lib/luarocks
-    #         /usr/local/etc/luarocks
-    #         /usr/local/include/lua
-    #         /usr/local/include/luarocks
+      - uses: actions/cache@v3
+        with:
+          key: luarocks-cjson
+          path: |
+            ~/.luarocks/lib/lua/5.4
+            ~/.luarocks/share/lua/5.4
+            .luarocks/lib/lua/5.4
+            .luarocks/share/lua/5.4
       - run: |
           luarocks install lua-cjson

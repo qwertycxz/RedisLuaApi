@@ -1,17 +1,28 @@
 on:
-    schedule:
-        - cron: "0 0 * * *"
-    workflow_dispatch:
+  schedule:
+    - cron: 0 0 * * *
+  workflow_dispatch:
 jobs:
-    keep-scheduled-workflow-activity:
-        uses: WaterLemons2k/scheduled-workflow-activity-action/.github/workflows/reusable.yml@v1
-    overload-call:
-        # outputs:
-        #     output1: ${{ steps.step1.outputs }}
-        runs-on: ubuntu-latest
-        steps:
-        - uses: leafo/gh-actions-lua@v10
-        - uses: leafo/gh-actions-luarocks@v4
-        - run: |
-            lua -v
-            luarocks -v
+  keep-scheduled-workflow-activity:
+    uses: WaterLemons2k/scheduled-workflow-activity-action/.github/workflows/reusable.yml@v1
+  overload-call:
+    # outputs:
+    #     output1: ${{ steps.step1.outputs }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: leafo/gh-actions-lua@v10
+      - uses: leafo/gh-actions-luarocks@v4
+    #   - uses: actions/cache@v3
+    #     with:
+    #       key: luarocks
+    #       path: |
+    #         /usr/local/bin/luarocks
+    #         /usr/local/bin/luarocks-5.1
+    #         /usr/local/share/lua
+    #         /usr/local/lib/lua
+    #         /usr/local/lib/luarocks
+    #         /usr/local/etc/luarocks
+    #         /usr/local/include/lua
+    #         /usr/local/include/luarocks
+      - run: |
+          luarocks install cjson

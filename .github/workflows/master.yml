@@ -25,4 +25,4 @@ jobs:
     #         /usr/local/include/lua
     #         /usr/local/include/luarocks
       - run: |
-          luarocks install cjson
+          luarocks install lua-cjson

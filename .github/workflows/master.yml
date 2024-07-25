@@ -4,6 +4,19 @@ jobs:
   overload-call:
     runs-on: ubuntu-latest
     steps:
+      - run: ls -Al
+      - uses: actions/checkout@main
+        with:
+          repository: redis/docs
+          sparse-checkout: |
+            data/resp2_replies.json
+            data/resp3_replies.json
+          sparse-checkout-cone-mode: false
+      - run: ls -Al
+      - uses: actions/checkout@main
+        with:
+          path: checkout
+      - run: ls -Al
       - uses: leafo/gh-actions-lua@master
       - uses: leafo/gh-actions-luarocks@master
       - id: cache
@@ -17,19 +30,6 @@ jobs:
             .luarocks/share/lua/5.4
       - if: steps.cache.outputs.cache-hit != 'true'
         run: luarocks install lua-cjson
-      - run: ls -Al
-      - uses: actions/checkout@main
-        with:
-          clean: false
-          repository: redis/docs
-          sparse-checkout: |
-            data/resp2_replies.json
-            data/resp3_replies.json
-          sparse-checkout-cone-mode: false
-      - run: ls -Al
-      - uses: actions/checkout@main
-        with:
-          clean: false
       - run: ls -Al
 on:
   schedule:

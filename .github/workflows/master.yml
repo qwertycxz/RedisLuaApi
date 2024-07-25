@@ -17,8 +17,10 @@ jobs:
             .luarocks/share/lua/5.4
       - if: steps.cache.outputs.cache-hit != 'true'
         run: luarocks install lua-cjson
+      - run: ls -Al
       - uses: actions/checkout@main
         with:
+          clean: false
           repository: redis/docs
           sparse-checkout: |
             data/resp2_replies.json
@@ -27,7 +29,7 @@ jobs:
       - run: ls -Al
       - uses: actions/checkout@main
         with:
-          path: checkout
+          clean: false
       - run: ls -Al
 on:
   schedule:

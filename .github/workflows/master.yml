@@ -1,18 +1,13 @@
-on:
-  schedule:
-    - cron: 0 0 * * *
-  workflow_dispatch:
 jobs:
   keep-scheduled-workflow-activity:
-    uses: WaterLemons2k/scheduled-workflow-activity-action/.github/workflows/reusable.yml@v1
+    uses: WaterLemons2k/scheduled-workflow-activity-action/.github/workflows/reusable.yml@main
   overload-call:
-    # outputs:
-    #     output1: ${{ steps.step1.outputs }}
     runs-on: ubuntu-latest
     steps:
-      - uses: leafo/gh-actions-lua@v10
-      - uses: leafo/gh-actions-luarocks@v4
-      - uses: actions/cache@v3
+      - uses: leafo/gh-actions-lua@master
+      - uses: leafo/gh-actions-luarocks@master
+      - id: cache
+        uses: actions/cache@main
         with:
           key: luarocks-cjson
           path: |
@@ -20,5 +15,16 @@ jobs:
             ~/.luarocks/share/lua/5.4
             .luarocks/lib/lua/5.4
             .luarocks/share/lua/5.4
-      - run: |
-          luarocks install lua-cjson
+      - if: steps.cache.outputs.cache-hit != 'true'
+        run: luarocks install lua-cjson
+      - uses: actions/checkout@main
+      - uses: actions/checkout@main
+        with:
+          repository: redis/docs
+          sparse-checkout: |
+            data/resp2_replies.json
+            data/resp3_replies.json
+on:
+  schedule:
+    - cron: 0 0 * * *
+  workflow_dispatch:

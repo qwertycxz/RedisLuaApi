@@ -18,6 +18,7 @@ jobs:
       - if: steps.cache.outputs.cache-hit != 'true'
         run: luarocks install lua-cjson
       - uses: actions/checkout@main
+      - run: ls
       - uses: actions/checkout@main
         with:
           repository: redis/docs

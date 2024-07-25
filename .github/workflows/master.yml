@@ -18,13 +18,16 @@ jobs:
       - if: steps.cache.outputs.cache-hit != 'true'
         run: luarocks install lua-cjson
       - uses: actions/checkout@main
-      - run: ls
-      - uses: actions/checkout@main
         with:
           repository: redis/docs
           sparse-checkout: |
             data/resp2_replies.json
             data/resp3_replies.json
+          sparse-checkout-cone-mode: false
+      - run: ls
+      - uses: actions/checkout@main
+        with:
+          path: checkout
       - run: ls
 on:
   schedule:

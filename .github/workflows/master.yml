@@ -24,6 +24,7 @@ jobs:
           sparse-checkout: |
             data/resp2_replies.json
             data/resp3_replies.json
+      - run: ls
 on:
   schedule:
     - cron: 0 0 * * *

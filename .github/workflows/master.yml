@@ -24,11 +24,11 @@ jobs:
             data/resp2_replies.json
             data/resp3_replies.json
           sparse-checkout-cone-mode: false
-      - run: ls
+      - run: ls -Al
       - uses: actions/checkout@main
         with:
           path: checkout
-      - run: ls
+      - run: ls -Al
 on:
   schedule:
     - cron: 0 0 * * *
